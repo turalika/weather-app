@@ -18,7 +18,6 @@ let cityInput = 'London';
 document.addEventListener('click', (e)=>{
     if(!e.target.classList.contains("city")) return;
     cityInput = e.target.innerHTML;
-
     GetRequest(weatherApi + cityInput, requestCallback);
 });
 
@@ -48,32 +47,33 @@ function requestCallback(data, status){
         return;
     }
     data = JSON.parse(data);
-    updatePanel(data);
+    updatePanelPlace(data);
+    let d = updatePanelDate(data);
+    updatePanelIcon(data);
+    updateBackground(data.current.condition.code, (d.getHours() >= 5 && d.getHours() < 19));
     updateSubPanel(data);
 }
 
 function dayOfTheWeek(day) {
-  let weekday = [
-    " Sunday " ,
-    " Monday " ,
-    " Tuesday " ,
-    " Wednesday " ,
-    " Thursday " ,
-    " Friday " ,
-    " Saturday "
-  ];
+  let weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   return weekday[day];
 }
 
-function updatePanel(data){
-        name.innerHTML = data.location.name;
-        temp.innerHTML = Math.round(data.current.temp_c) + "°";
-        let d = new Date(data.location.localtime);
-        time.innerHTML = ('0'+d.getHours()).slice(-2) + ":" + ('0'+d.getMinutes()).slice(-2);
-        date.innerHTML = dayOfTheWeek(d.getDay()) + d.toLocaleString('en-US', { month: 'short' }) + " " + ('0'+d.getDate()).slice(-2);
-        icon.src = "https:" + data.current.condition.icon;
-        condition.innerHTML = data.current.condition.text;
-        updateBackground(data.current.condition.code, (d.getHours() >= 5 && d.getHours() < 19));
+function updatePanelPlace(data){
+    name.innerHTML = data.location.name;
+    temp.innerHTML = Math.round(data.current.temp_c) + "°";
+}
+
+function updatePanelDate(data){
+    let d = new Date(data.location.localtime);
+    time.innerHTML = ('0'+d.getHours()).slice(-2) + ":" + ('0'+d.getMinutes()).slice(-2);
+    date.innerHTML = dayOfTheWeek(d.getDay()) + " " + d.toLocaleString('en-US', { month: 'short' }) + " " + ('0'+d.getDate()).slice(-2);
+    return d;
+}
+
+function updatePanelIcon(data){
+    icon.src = "https:" + data.current.condition.icon;
+    condition.innerHTML = data.current.condition.text;
 }
 
 function updateSubPanel(data){
@@ -86,11 +86,10 @@ function updateBackground(code, day){
     let rain = [1063, 1069, 1072, 1150, 1153, 1180, 1183, 1186, 1189, 1192, 1195, 1204, 1207, 1240, 1243, 1246, 1249, 1252];
     let cloudy = [1003, 1006, 1009, 1030, 1069, 1087, 1135, 1273, 1276, 1279, 1282];
     let imgName = "clear";
-    if(rain.indexOf(code) >= 0){
-        imgName = "rain";
-    }else if(cloudy.indexOf(code) >= 0){
-        imgName = "cloud";
-    }
+
+    if(rain.indexOf(code) >= 0) imgName = "rain";
+    else if(cloudy.indexOf(code) >= 0) imgName = "cloud";
+
     app.style.backgroundImage = (day) ? imgName = 'clear' : imgName = 'night';
     app.style.backgroundImage = `url(./img/${imgName}.jpg)`;
 }
